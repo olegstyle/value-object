@@ -1,7 +1,7 @@
 {
-  "name": "olegstyle/helpers",
+  "name": "olegstyle/valueobject",
   "type": "library",
-  "description": "Helper Classes",
+  "description": "Value Object",
   "license": "MIT",
   "homepage": "http://bodev.pro/",
   "authors": [
@@ -19,7 +19,7 @@
   },
   "autoload": {
     "psr-4": {
-      "OlegStyle\\Helpers\\": "src/"
+      "OlegStyle\\ValueObject\\": "src/"
     }
   }
 }

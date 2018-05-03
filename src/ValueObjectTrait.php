@@ -3,6 +3,12 @@
 namespace OlegStyle\ValueObject;
 
 use OlegStyle\ValueObject\Exceptions\ValidationException;
+use phpDocumentor\Reflection\TypeResolver;
+use phpDocumentor\Reflection\Types\Array_;
+use phpDocumentor\Reflection\Types\Compound;
+use phpDocumentor\Reflection\Types\ContextFactory;
+use phpDocumentor\Reflection\Types\Mixed_;
+use phpDocumentor\Reflection\Types\Object_;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
@@ -59,16 +65,24 @@ trait ValueObjectTrait
 
                 continue;
             }
+            $futureParameterValue = $data[$parameter->name];
+
             // if used parameter instance of some class then try to create object for this class
             $parameterClass = $parameter->getClass();
             if ($parameterClass !== null) {
-                $args[$parameter->name] = static::getParameterFromClass($parameterClass, $data[$parameter->name]);
+                $args[$parameter->name] = static::getParameterFromClass($parameterClass, $futureParameterValue);
 
                 continue;
             }
 
+            if ($parameter->isArray()) {
+                $args[$parameter->name] = static::getParameterForArray($reflection, $parameter, $futureParameterValue);
+                // array of value-objects
+                continue;
+            }
+
             // in another way try to set parameter
-            $args[$parameter->name] = $data[$parameter->name];
+            $args[$parameter->name] = $futureParameterValue;
         }
         /** @var static $instance */
         $instance = $reflection->newInstanceArgs($args);
@@ -92,24 +106,79 @@ trait ValueObjectTrait
         throw new ValidationException("{$parameter->name} is not defined in array");
     }
 
+
+    protected static function isInstanceOfSelf(ReflectionClass $reflection): bool
+    {
+        do {
+            $parentClass = $reflection->getParentClass();
+            if ($parentClass->getName() === self::class) {
+                return true;
+            }
+        } while ($parentClass->getParentClass());
+
+        return false;
+    }
+
     /**
      * @param ReflectionClass $parameterClass
      * @param mixed $data
-     * @return mixed
+     * @return ValueObject|mixed
      */
     protected static function getParameterFromClass(ReflectionClass $parameterClass, $data)
     {
-        // get last parent class
-        do {
-            $lastParentClass = $parameterClass->getParentClass();
-        } while ($lastParentClass->getParentClass());
-
-        // if last parent class is a ValueObject then we can make instance by using function `fromArray`
-        if ($lastParentClass->getName() === self::class && is_array($data)) {
+        if (is_array($data) && static::isInstanceOfSelf($parameterClass)) {
             return ($parameterClass->getName())::fromArray($data);
         }
 
         // in another way try to return data value
+        return $data;
+    }
+
+    /**
+     * @param ReflectionClass $reflection
+     * @param ReflectionParameter $parameter
+     * @param mixed $data
+     * @return mixed
+     */
+    public static function getParameterForArray(ReflectionClass $reflection, ReflectionParameter $parameter, $data)
+    {
+        $property = $reflection->getProperty($parameter->getName());
+        $doc = $property->getDocComment();
+        if (!$doc || !preg_match('/@var (\S+)/i', $doc, $matches)) {
+            return $data;
+        }
+
+        $typeResolver = new TypeResolver();
+        /** @var Compound $types */
+        $contextFactory = new ContextFactory();
+        $types = $typeResolver->resolve($matches[1], $contextFactory->createFromReflector($reflection));
+        foreach ($types as $type) {
+            // if it is not a array then continue
+            if (($type instanceof Array_) === false) {
+                continue;
+            }
+
+            // if array can get mixed values - then continue
+            /** @var Array_ $type */
+            $valueType = $type->getValueType();
+            if ($valueType instanceof Mixed_) {
+                continue;
+            }
+
+            // if it is a object, then we should check it for value object
+            if ($valueType instanceof Object_) {
+                $class = (string) $valueType->getFqsen();
+                if (static::isInstanceOfSelf(new ReflectionClass($class))) {
+                    $result = [];
+                    foreach ($data as $key => $item) {
+                        $result[$key] = ($class)::fromArray($item);
+                    }
+
+                    return $result;
+                }
+            }
+        }
+
         return $data;
     }
 }

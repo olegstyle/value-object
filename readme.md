@@ -2,7 +2,11 @@
 
 ## Requires
 
-PHP >= 7.1
+```
+"php": ">=7.1",
+"phpdocumentor/reflection-common": "2.0.0-alpha2",
+"phpdocumentor/type-resolver": "^0.6.1"
+```
 
 ## Installation
 

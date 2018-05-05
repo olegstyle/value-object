@@ -21,6 +21,8 @@ use ReflectionParameter;
  */
 trait ValueObjectTrait
 {
+    private static $ENUM_CLASS = 'OlegStyle\Enum\Enum';
+
     public function __toString(): string
     {
         return json_encode($this->toArray());
@@ -113,15 +115,26 @@ trait ValueObjectTrait
         throw new ValidationException("{$parameter->name} is not defined in array");
     }
 
-
-    protected static function isInstanceOfSelf(ReflectionClass $reflection): bool
+    protected static function isInstanceOfClass(ReflectionClass $reflection, string $className): bool
     {
         do {
             $parentClass = $reflection->getParentClass();
-            if ($parentClass->getName() === self::class) {
+            if ($parentClass->getName() === $className) {
                 return true;
             }
         } while ($parentClass->getParentClass());
+    }
+
+    protected static function isInstanceOfSelf(ReflectionClass $reflection): bool
+    {
+        return static::isInstanceOfClass($reflection, self::class);
+    }
+
+    protected static function isInstanceOfEnum(ReflectionClass $reflectionClass): bool
+    {
+        if (class_exists(self::$ENUM_CLASS)) {
+            return static::isInstanceOfClass($reflectionClass, self::$ENUM_CLASS);
+        }
 
         return false;
     }
@@ -135,6 +148,10 @@ trait ValueObjectTrait
     {
         if (is_array($data) && static::isInstanceOfSelf($parameterClass)) {
             return ($parameterClass->getName())::fromArray($data);
+        }
+
+        if (static::isInstanceOfEnum($parameterClass)) {
+            return new self::$ENUM_CLASS($data);
         }
 
         // in another way try to return data value

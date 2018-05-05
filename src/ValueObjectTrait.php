@@ -123,6 +123,8 @@ trait ValueObjectTrait
                 return true;
             }
         } while ($parentClass->getParentClass());
+
+        return false;
     }
 
     protected static function isInstanceOfSelf(ReflectionClass $reflection): bool

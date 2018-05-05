@@ -153,7 +153,7 @@ trait ValueObjectTrait
         }
 
         if (static::isInstanceOfEnum($parameterClass)) {
-            return new self::$ENUM_CLASS($data);
+            return new ($parameterClass->getName())($data);
         }
 
         // in another way try to return data value

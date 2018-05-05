@@ -58,7 +58,14 @@ trait ValueObjectTrait
         $constructor = $reflection->getConstructor();
         $parameters = $constructor->getParameters();
         $args = [];
+        $i = -1;
         foreach ($parameters as $parameter) {
+            $i += 1;
+            // when value is not specified by name then try to get value by increment
+            if (!isset($data[$parameter->name]) && isset($data[$i])) {
+                $data[$parameter->name] = $data[$i];
+            }
+
             // when value is not specified then try to get default value
             if (!isset($data[$parameter->name])) {
                 $args[$parameter->name] = static::getDefaultParameterValue($parameter);

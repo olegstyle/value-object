@@ -24,33 +24,58 @@ class ValueObjectTest extends TestCase
                 'a' => ['name' => '1'],
                 'b' => ['name' => '2', 'surname' => 'two'],
                 'c' => ['name' => '3', 'surname' => 'three'],
-            ]
+            ],
+            'listOfC' => [
+                ['value1' => 1],
+                [2, 'not default'],
+            ],
         ]);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->a);
-        $this->assertEquals($b->a->name, 'Tester');
+        $this->assertEquals('Tester', $b->a->name);
         $this->assertNull($b->a->surname);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->listOfA['a']);
-        $this->assertEquals($b->listOfA['a']->name, '1');
+        $this->assertEquals('1', $b->listOfA['a']->name);
         $this->assertNull($b->listOfA['a']->surname);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->listOfA['b']);
-        $this->assertEquals($b->listOfA['b']->name, '2');
-        $this->assertEquals($b->listOfA['b']->surname, 'two');
+        $this->assertEquals('2', $b->listOfA['b']->name);
+        $this->assertEquals('two', $b->listOfA['b']->surname);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->listOfA['c']);
-        $this->assertEquals($b->listOfA['c']->name, '3');
-        $this->assertEquals($b->listOfA['c']->surname, 'three');
+        $this->assertEquals('3', $b->listOfA['c']->name);
+        $this->assertEquals('three', $b->listOfA['c']->surname);
+
+        $this->assertInstanceOf(C_ValueObjectTrait::class, $b->listOfC[0]);
+        $this->assertEquals(1, $b->listOfC[0]->value1);
+        $this->assertEquals(2, $b->listOfC[1]->value1);
+        $this->assertEquals('Default', $b->listOfC[0]->value2);
+        $this->assertEquals('not default', $b->listOfC[1]->value2);
+    }
+}
+
+class C_ValueObjectTrait extends ValueObject
+{
+    /** @var int */
+    public $value1;
+
+    /** @var string */
+    public $value2;
+
+    public function __construct(int $value1, ?string $value2 = 'Default')
+    {
+        $this->value1 = $value1;
+        $this->value2 = $value2;
     }
 }
 
 class A_ValueObjectTrait extends ValueObject
 {
-    ///** @var string */
+    /** @var string */
     public $name;
 
-    ///** @var null|string */
+    /** @var null|string */
     public $surname;
 
     public function __construct(string $name, ?string $surname)
@@ -62,19 +87,23 @@ class A_ValueObjectTrait extends ValueObject
 
 class B_ValueObjectTrait extends ValueObject
 {
-    ///** @var int */
+    /** @var int */
     public $year;
 
-    ///** @var A_ValueObjectTrait */
+    /** @var A_ValueObjectTrait */
     public $a;
 
     /** @var array|A_ValueObjectTrait[] */
     public $listOfA;
 
-    public function __construct(int $year, A_ValueObjectTrait $a, array $listOfA)
+    /** @var array|C_ValueObjectTrait[] */
+    public $listOfC;
+
+    public function __construct(int $year, A_ValueObjectTrait $a, array $listOfA, array $listOfC)
     {
         $this->year = $year;
         $this->a = $a;
         $this->listOfA = $listOfA;
+        $this->listOfC = $listOfC;
     }
 }

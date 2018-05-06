@@ -132,10 +132,23 @@ trait ValueObjectTrait
         return static::isInstanceOfClass($reflection, self::class);
     }
 
-    protected static function isInstanceOfEnum(ReflectionClass $reflectionClass): bool
+    protected static function isReflectionInstanceOfEnum(ReflectionClass $reflectionClass): bool
     {
         if (class_exists(self::$ENUM_CLASS)) {
             return static::isInstanceOfClass($reflectionClass, self::$ENUM_CLASS);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param mixed $object
+     * @return bool
+     */
+    protected static function isObjectInstanceOfEnum($object): bool
+    {
+        if (class_exists(self::$ENUM_CLASS)) {
+            return is_subclass_of($object, self::$ENUM_CLASS);
         }
 
         return false;
@@ -152,7 +165,10 @@ trait ValueObjectTrait
             return ($parameterClass->getName())::fromArray($data);
         }
 
-        if (static::isInstanceOfEnum($parameterClass)) {
+        if (static::isReflectionInstanceOfEnum($parameterClass)) {
+            if (self::isObjectInstanceOfEnum($data)) {
+                return $data;
+            }
             $className = $parameterClass->getName();
             return new $className($data);
         }

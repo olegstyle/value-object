@@ -90,6 +90,11 @@ trait ValueObjectTrait
                 continue;
             }
 
+            $parameterType = (string) $parameter->getType();
+            if (is_float($futureParameterValue) && $parameterType === 'string') {
+                $futureParameterValue = static::convertFloatToString($futureParameterValue);
+            }
+
             // in another way try to set parameter
             $args[$parameter->name] = $futureParameterValue;
         }
@@ -97,6 +102,11 @@ trait ValueObjectTrait
         $instance = $reflection->newInstanceArgs($args);
 
         return $instance;
+    }
+
+    protected static function convertFloatToString(float $value): string
+    {
+        return rtrim(sprintf('%.20f', $value), '0');
     }
 
     /**

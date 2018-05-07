@@ -29,6 +29,7 @@ class ValueObjectTest extends TestCase
                 ['value1' => 1],
                 [2, 'not default'],
             ],
+            'floatConvert' => 0.00000000012391
         ]);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->a);
@@ -52,6 +53,7 @@ class ValueObjectTest extends TestCase
         $this->assertEquals(2, $b->listOfC[1]->value1);
         $this->assertEquals('Default', $b->listOfC[0]->value2);
         $this->assertEquals('not default', $b->listOfC[1]->value2);
+        var_dump($b->floatConvert);
     }
 }
 
@@ -99,11 +101,15 @@ class B_ValueObjectTrait extends ValueObject
     /** @var array|C_ValueObjectTrait[] */
     public $listOfC;
 
-    public function __construct(int $year, A_ValueObjectTrait $a, array $listOfA, array $listOfC)
+    /** @var string */
+    public $floatConvert;
+
+    public function __construct(int $year, A_ValueObjectTrait $a, array $listOfA, array $listOfC, string $floatConvert)
     {
         $this->year = $year;
         $this->a = $a;
         $this->listOfA = $listOfA;
         $this->listOfC = $listOfC;
+        $this->floatConvert = $floatConvert;
     }
 }

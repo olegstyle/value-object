@@ -106,7 +106,7 @@ trait ValueObjectTrait
 
     protected static function convertFloatToString(float $value): string
     {
-        return rtrim(sprintf('%.20f', $value), '0');
+        return rtrim(sprintf('%.20F', $value), '0');
     }
 
     /**

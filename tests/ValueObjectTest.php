@@ -29,7 +29,7 @@ class ValueObjectTest extends TestCase
                 ['value1' => 1],
                 [2, 'not default'],
             ],
-            'floatConvert' => 0.00000000012391
+            'floatConvert' => 0.00063535
         ]);
 
         $this->assertInstanceOf(A_ValueObjectTrait::class, $b->a);
@@ -53,7 +53,7 @@ class ValueObjectTest extends TestCase
         $this->assertEquals(2, $b->listOfC[1]->value1);
         $this->assertEquals('Default', $b->listOfC[0]->value2);
         $this->assertEquals('not default', $b->listOfC[1]->value2);
-        var_dump($b->floatConvert);
+        $this->assertEquals($b->floatConvert, '0.00063535');
     }
 }
 

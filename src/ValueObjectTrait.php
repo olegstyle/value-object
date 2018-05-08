@@ -106,7 +106,13 @@ trait ValueObjectTrait
 
     protected static function convertFloatToString(float $value): string
     {
-        return rtrim(sprintf('%.20F', $value), '0');
+        $norm = (string) $value;
+
+        if (($e = strrchr($norm, 'E')) === false) {
+            return $norm;
+        }
+
+        return number_format($norm, -((int) substr($e, 1)));
     }
 
     /**

@@ -108,11 +108,19 @@ trait ValueObjectTrait
     {
         $norm = (string) $value;
 
-        if (($e = strrchr($norm, 'E')) === false) {
+        $parts = preg_split('/E/i', $norm);
+        if (count($parts) === 1) {
             return $norm;
         }
 
-        return number_format($norm, -((int) substr($e, 1)));
+        $formatCount = -((int) $parts[1]);
+
+        $floatParts = explode('.', $parts[0]);
+        if (count($floatParts) > 1 && $floatParts[1] !== '0') {
+            $formatCount += strlen($floatParts[1]);
+        }
+
+        return number_format($norm, $formatCount);
     }
 
     /**

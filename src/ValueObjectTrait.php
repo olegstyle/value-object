@@ -185,8 +185,12 @@ trait ValueObjectTrait
      */
     protected static function getParameterFromClass(ReflectionClass $parameterClass, $data)
     {
-        if (is_array($data) && static::isInstanceOfSelf($parameterClass)) {
-            return ($parameterClass->getName())::fromArray($data);
+        if (static::isInstanceOfSelf($parameterClass)) {
+            if (is_array($data) || is_object($data)) {
+                return ($parameterClass->getName())::fromArray((array) $data);
+            }
+
+            return ($parameterClass->getName())::fromArray([$data]);
         }
 
         if (static::isReflectionInstanceOfEnum($parameterClass)) {

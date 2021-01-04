@@ -58,6 +58,9 @@ trait ValueObjectTrait
     public static function getInstanceFromReflectionClass(array $data, ReflectionClass $reflection)
     {
         $constructor = $reflection->getConstructor();
+        if (!$constructor) {
+            return new static();
+        }
         $parameters = $constructor->getParameters();
         $args = [];
         $i = -1;
@@ -77,7 +80,9 @@ trait ValueObjectTrait
             $futureParameterValue = $data[$parameter->name];
 
             // if used parameter instance of some class then try to create object for this class
-            $parameterClass = $parameter->getClass();
+            $parameterClass = $parameter->getType() && !$parameter->getType()->isBuiltin()
+                ? new ReflectionClass($parameter->getType()->getName())
+                : null;
             if ($parameterClass !== null) {
                 $args[$parameter->name] = static::getParameterFromClass($parameterClass, $futureParameterValue);
 
